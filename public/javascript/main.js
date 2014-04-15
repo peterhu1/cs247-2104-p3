@@ -81,12 +81,9 @@
         var audioSource = document.createElement("source");
         audioSource.type = 'audio/mpeg';
         audioSource.src = '/sounds/laughtrack.mp3';
-       // audioSource.src = URL.createObjectURL(base64_to_blob('/sounds/laughtrack.mp3'));
         audio.play();
         audio.appendChild(audioSource);
       
-        var div = document.getElementById("audio");
-        div.appendChild(audio);
       }
       // for video element
       var video = document.createElement("video");
