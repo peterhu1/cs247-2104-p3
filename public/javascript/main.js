@@ -49,9 +49,14 @@
     // bind submission box
     $("#submission input").keydown(function( event ) {
       if (event.which == 13) {
-        if(has_emotions($(this).val())){
+        //response depends on if user inputs'lol' or if user inputs smiley/sad faces. 
+        //1 for lol in message, 0 for smileys
+        if(has_lol($(this).val())){
+          fb_instance_stream.push({m:username+": " +$(this).val(), v:cur_video_blob, c: my_color, t:1});
+        }else if(has_smileys($(this).val())){
           fb_instance_stream.push({m:username+": " +$(this).val(), v:cur_video_blob, c: my_color});
-        }else{
+        }
+        else{
           fb_instance_stream.push({m:username+": " +$(this).val(), c: my_color});
         }
         $(this).val("");
@@ -67,6 +72,22 @@
   function display_msg(data){
     $("#conversation").append("<div class='msg' style='color:"+data.c+"'>"+data.m+"</div>");
     if(data.v){
+   
+      //for laugh track if user types in 'lol'
+      if (data.t){
+        
+        var audio = document.createElement("audio");
+       
+        var audioSource = document.createElement("source");
+        audioSource.type = 'audio/mpeg';
+        audioSource.src = '/sounds/laughtrack.mp3';
+       // audioSource.src = URL.createObjectURL(base64_to_blob('/sounds/laughtrack.mp3'));
+        audio.play();
+        audio.appendChild(audioSource);
+      
+        var div = document.getElementById("audio");
+        div.appendChild(audio);
+      }
       // for video element
       var video = document.createElement("video");
       video.autoplay = true;
@@ -83,7 +104,8 @@
       // for gif instead, use this code below and change mediaRecorder.mimeType in onMediaSuccess below
       // var video = document.createElement("img");
       // video.src = URL.createObjectURL(base64_to_blob(data.v));
-
+      
+     
       document.getElementById("conversation").appendChild(video);
     }
   }
@@ -147,10 +169,13 @@
             cur_video_blob = b64_data;
           });
       };
-      setInterval( function() {
+
+      //set recording interval to 3 seconds
+
+    setInterval( function() {
         mediaRecorder.stop();
-        mediaRecorder.start(3000);
-      }, 3000 );
+        mediaRecorder.start(5000);
+      }, 5000 );
       console.log("connect to media stream!");
     }
 
@@ -163,9 +188,9 @@
     navigator.getUserMedia(mediaConstraints, onMediaSuccess, onMediaError);
   }
 
-  // check to see if a message qualifies to be replaced with video.
-  var has_emotions = function(msg){
-    var options = ["lol",":)",":("];
+  // check to see if a message qualifies to be replaced with video (has 'lol' in text)
+  var has_lol = function(msg){
+    var options = ["lol"];
     for(var i=0;i<options.length;i++){
       if(msg.indexOf(options[i])!= -1){
         return true;
@@ -173,6 +198,19 @@
     }
     return false;
   }
+
+  //check to see if message has smiley/sad faces
+  var has_smileys = function(msg){
+    var options = [":)",":("];
+    for(var i=0;i<options.length;i++){
+      if(msg.indexOf(options[i])!= -1){
+        return true;
+      }
+    }
+    return false;
+  }
+
+
 
 
   // some handy methods for converting blob to base 64 and vice versa
